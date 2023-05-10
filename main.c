@@ -22,6 +22,8 @@ struct Token
   char *str;      // Token string
 };
 
+// Input program
+char *user_input;
 //Global Current token
 Token *token;
 
@@ -30,6 +32,20 @@ void error(char *fmt, ...)//可以接受一个格式字符串fmt和随后的可�
 {
   va_list ap;
   va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
+// Reports an error location and exit.
+void error_at(char *loc, char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+
+  int pos = loc - user_input;
+  fprintf(stderr, "%s\n", user_input);
+  fprintf(stderr, "%*s", pos, ""); // print pos spaces.
+  fprintf(stderr, "^ ");
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
   exit(1);
@@ -48,7 +64,7 @@ bool consume(char op)//检查当前token是否是一个预期的字符（如加�
 void expect(char op) 
 {
   if (token->kind != TK_RESERVED || token->str[0] != op)
-    error("expected '%c'", op);
+    error_at(token->str,"expected '%c'", op);
   token = token->next;
 }
 
@@ -56,7 +72,7 @@ void expect(char op)
 long expect_number(void) 
 {
   if (token->kind != TK_NUM)
-    error("expected a number");
+    error_at(token->str,"expected a number");
   long val = token->val;
   token = token->next;
   return val;
@@ -77,9 +93,10 @@ Token *new_token(TokenKind kind, Token *cur, char *str)
   return tok;
 }
 
-// Tokenize `p` and returns new tokens.
-Token *tokenize(char *p) 
+// Tokenize `user_input` and returns new tokens.
+Token *tokenize(void) 
 {
+  char *p=user_input;
   Token head = {};
   Token *cur = &head;
 
@@ -103,7 +120,7 @@ Token *tokenize(char *p)
       continue;
     }
 
-    error("invalid token");
+    error_at(p,"invalid token");
   }
 
   new_token(TK_EOF, cur, p);
@@ -116,8 +133,8 @@ int main(int argc,char **argv)
     if(argc!=2)
         error("%s: invalid number of arguments",argv[0]);
 
-    // char *p=argv[1];//传入的参数（sh里的input)
-    token=tokenize(argv[1]);
+    user_input=argv[1];
+    token=tokenize();
 
     printf(".intel_syntax noprefix\n");
     printf("  .globl main\n");
