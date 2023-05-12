@@ -9,7 +9,7 @@ int main(int argc,char **argv)
     user_input=argv[1];
     token=tokenize();
     //从根节点往下进行汇编代码生成
-    Node *node=expr();
+    Node *node = program();
     // Traverse the AST to emit assembly.
     codegen(node);
 

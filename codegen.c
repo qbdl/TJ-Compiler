@@ -57,10 +57,10 @@ void codegen(Node *node) {
   printf(".global main\n");
   printf("main:\n");
 
-  gen(node);
-
-  // A result must be at the top of the stack, so pop it
-  // to RAX to make it a program exit code.
-  printf("  pop rax\n");
+  for (Node *n = node; n; n = n->next) {
+    gen(n);
+    printf("  pop rax\n");
+  }
+  
   printf("  ret\n");
 }
