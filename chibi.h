@@ -12,6 +12,7 @@
 typedef enum
 {
     TK_RESERVED, // Keywords or punctuators
+    TK_IDENT,    // Identifiers
     TK_NUM,      // Integer literals
     TK_EOF,      // End-of-file markers
 }TokenKind;
@@ -31,6 +32,7 @@ struct Token
 void error(char *fmt, ...);// Reports an error and exit.
 void error_at(char *loc, char *fmt, ...);// Reports an error location and exit.
 bool consume(char *op);// Consumes the current token if it matches `op`.
+Token *consume_ident(void);
 void expect(char *op); // Ensure that the current token is `op`.
 long expect_number(void); // Ensure that the current token is TK_NUM.
 bool at_eof(void); 
@@ -57,8 +59,10 @@ typedef enum
   ND_NE,        // !=
   ND_LT,        // <
   ND_LE,        // <=
+  ND_ASSIGN,    // =
   ND_RETURN,    // "return"
   ND_EXPR_STMT, // Expression statement
+  ND_VAR,       // Variable
   ND_NUM,       // Integer
 } NodeKind;
 
@@ -70,6 +74,7 @@ struct Node
   Node *next;    // Next node
   Node *lhs;     // Left-hand side
   Node *rhs;     // Right-hand side
+  char name;     // Used if kind == ND_VAR
   long val;      // Used if kind == ND_NUM
 };
 
