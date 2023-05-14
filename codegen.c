@@ -1,5 +1,8 @@
 #include "chibi.h"
 
+
+static int labelseq=1;
+
 // Pushes the given node's address to the stack.
 static void gen_addr(Node *node) //计算具体变量的地址
 {
@@ -48,6 +51,30 @@ static void gen(Node *node)
       gen(node->rhs);
       store();
       return;
+    case ND_IF:
+    {
+      int seq=labelseq++;
+      if(node->els){
+        gen(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax,0\n");
+        printf("  je  .L.else.%d\n",seq);
+        gen(node->then);
+        printf("  jmp .L.end.%d\n",seq);
+        printf(".L.else.%d:\n",seq);
+        gen(node->els);
+        printf(".L.end.%d:\n",seq);
+      }
+      else{
+        gen(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax,0\n");
+        printf("  je  .L.end.%d\n",seq);
+        gen(node->then);
+        printf(".L.end.%d:\n",seq);
+      }
+      return;
+    }
     case ND_RETURN:
       gen(node->lhs);
       printf("  pop rax\n");
