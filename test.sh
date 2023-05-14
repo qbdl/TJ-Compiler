@@ -1,13 +1,14 @@
 #!/bin/bash
+cat <<EOF | gcc -xc -c -o tmp2.o -
+int ret3() { return 3; }
+int ret5() { return 5; }
+EOF
+
 assert() {
-#将输入的两个参数赋值给本地变量 expected 和 input。
   expected="$1"
   input="$2"
-# 调用当前目录下的 chibicc 可执行文件，并将 $input 作为参数传递给它。将 chibicc 的标准输出重定向到名为 tmp.s 的文件中。如果执行出错（返回值非 0），则退出脚本。
   ./chibicc "$input" > tmp.s || exit
-# 调用 gcc 编译器，将名为 tmp.s 的汇编代码文件作为输入文件，并生成名为 tmp 的静态可执行文件。
-  gcc -static -o tmp tmp.s
-# 运行 tmp 可执行文件，将其输出结果存储在本地变量 actual 中
+  gcc -static -o tmp tmp.s tmp2.o
   ./tmp
   actual="$?"
 
@@ -74,5 +75,8 @@ assert 55 'i=0; j=0; while(i<=10) {j=i+j; i=i+1;} return j;'
 
 assert 55 'i=0; j=0; for (i=0; i<=10; i=i+1) j=i+j; return j;'
 assert 3 'for (;;) return 3; return 5;'
+
+assert 3 'return ret3();'
+assert 5 'return ret5();'
 
 echo OK
