@@ -119,7 +119,14 @@ Token *tokenize(void)
       continue;
     }
 
-    // Signle-letter Identifier
+    //Identifier
+    if(is_alpha(*p)){
+      char *q=p++;
+      while(is_alnum(*p))
+        p++;
+      cur=new_token(TK_IDENT,cur,q,p-q);
+      continue;
+    }
     if ('a' <= *p && *p <= 'z') {
       cur = new_token(TK_IDENT, cur, p++, 1);
       continue;
