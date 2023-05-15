@@ -15,7 +15,7 @@ static void gen_addr(Node *node) //计算具体变量的地址
     return;
   }
 
-  error("not an lvalue");
+  error_tok(node->tok, "not an lvalue");
 }
 
 static void load(void) //通过栈顶地址取数据并压栈

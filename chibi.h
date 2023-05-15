@@ -33,7 +33,8 @@ struct Token
 
 void error(char *fmt, ...);// Reports an error and exit.
 void error_at(char *loc, char *fmt, ...);// Reports an error location and exit.
-bool consume(char *op);// Consumes the current token if it matches `op`.
+void error_tok(Token *tok, char *fmt, ...);
+Token *consume(char *op);
 Token *consume_ident(void);
 void expect(char *op); // Ensure that the current token is `op`.
 long expect_number(void); // Ensure that the current token is TK_NUM.
@@ -96,6 +97,7 @@ struct Node
 {
   NodeKind kind; // Node kind
   Node *next;    // Next node
+  Token *tok;    // Representative token
 
   Node *lhs;     // Left-hand side
   Node *rhs;     // Right-hand side
