@@ -119,7 +119,7 @@ static void gen(Node *node)
       }
 
       for(int i=nargs-1;i>=0;i--)
-        printf("  pop %s\n",argreg[i]);
+        printf("  pop %s\n",argreg[i]);//变量存到寄存器里
       
       // We need to align RSP to a 16 byte boundary before
       // calling a function because it is an ABI requirement.
@@ -192,6 +192,8 @@ static void gen(Node *node)
   printf("  push rax\n");
 }
 
+
+//外界的入口
 void codegen(Function *prog) 
 {
   printf(".intel_syntax noprefix\n");
@@ -206,6 +208,13 @@ void codegen(Function *prog)
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
     printf("  sub rsp, %d\n",fn->stack_size);
+
+    //Push arguments to the stack
+    int i=0;
+    for(VarList *vl=fn->params;vl;vl=vl->next){
+      Var *var=vl->var;
+      printf("  mov [rbp-%d],%s\n",var->offset,argreg[i++]);//从对应的寄存器中取出参数值，然后将其存储在栈上
+    }
 
     //Emit code
     for (Node *node = fn->node; node; node = node->next)
