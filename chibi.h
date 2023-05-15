@@ -37,6 +37,7 @@ bool consume(char *op);// Consumes the current token if it matches `op`.
 Token *consume_ident(void);
 void expect(char *op); // Ensure that the current token is `op`.
 long expect_number(void); // Ensure that the current token is TK_NUM.
+char *expect_ident(void);
 bool at_eof(void); 
 Token *tokenize(void);
 
@@ -115,6 +116,8 @@ struct Node
 typedef struct Function Function;
 struct Function
 {
+  Function *next;
+  char *name;
   Node *node;
   Var *locals;
   int stack_size;

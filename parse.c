@@ -59,6 +59,7 @@ static Var *new_lvar(char *name)
   return var;
 }
 
+static Function *function(void);
 static Node *stmt(void);
 static Node *expr(void);
 static Node *assign(void);
@@ -70,28 +71,46 @@ static Node *unary(void);
 static Node *primary(void);
 
 //目前parser的起点
-// program = stmt*
-Function *program(void)
+// program = function*
+Function *program(void) 
 {
-  locals=NULL;
+  Function head = {};
+  Function *cur = &head;
 
-
-  Node head={};
-  Node *cur=&head;
-
-  while(!at_eof()){
-    cur->next=stmt();
-    cur=cur->next;
+  while (!at_eof()) {
+    cur->next = function();
+    cur = cur->next;
   }
-
-  Function *prog=calloc(1,sizeof(Function));
-  prog->node=head.next;
-  prog->locals=locals;
-
-  return prog;
+  return head.next;
 }
 
-static Node *read_expr_stmt(void) {
+// function = ident "(" ")" "{" stmt* "}"
+static Function *function(void) 
+{
+  locals = NULL;
+
+  char *name = expect_ident();
+  expect("(");
+  expect(")");
+  expect("{");
+
+  Node head = {};
+  Node *cur = &head;
+
+  while (!consume("}")) {
+    cur->next = stmt();
+    cur = cur->next;
+  }
+
+  Function *fn = calloc(1, sizeof( Function));
+  fn->name = name;
+  fn->node = head.next;
+  fn->locals = locals;
+  return fn;
+}
+
+static Node *read_expr_stmt(void) 
+{
   return new_unary(ND_EXPR_STMT, expr());
 }
 
