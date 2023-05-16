@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <assert.h>
 #include<ctype.h>//用于测试和转换字符的函数
 #include<stdarg.h>//处理可变数量的参数
 #include<stdbool.h>
@@ -149,18 +150,21 @@ Function *program(void);
 // typing.c
 //
 
-typedef enum { TY_INT, TY_PTR } TypeKind;
+typedef enum { TY_INT, TY_PTR, TY_ARRAY } TypeKind;
 
 struct Type
 {
   TypeKind kind;
+  int size;      // sizeof() value
   Type *base;
+  int array_len;
 };
 
 extern Type *int_type;
 
 bool is_integer(Type *ty);
 Type *pointer_to(Type *base);
+Type *array_of(Type *base, int size);
 void add_type(Node *node);
 
 

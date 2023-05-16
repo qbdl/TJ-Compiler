@@ -25,6 +25,14 @@ static void gen_addr(Node *node) //计算具体变量的地址
   error_tok(node->tok, "not an lvalue");
 }
 
+//用于gen_addr类似作用
+static void gen_lval(Node *node) 
+{
+  if (node->ty->kind == TY_ARRAY)
+    error_tok(node->tok, "not an lvalue");
+  gen_addr(node);
+}
+
 static void load(void) //通过栈顶地址取数据并压栈
 {
   printf("  pop rax\n");
@@ -56,10 +64,11 @@ static void gen(Node *node)
       return;
     case ND_VAR:
       gen_addr(node);
-      load();
+      if (node->ty->kind != TY_ARRAY)
+        load();
       return;
     case ND_ASSIGN:
-      gen_addr(node->lhs);
+      gen_lval(node->lhs);
       gen(node->rhs);
       store();
       return;
@@ -68,7 +77,8 @@ static void gen(Node *node)
       return;
     case ND_DEREF:
       gen(node->lhs);
-      load();
+      if (node->ty->kind != TY_ARRAY)
+        load();
       return;
     case ND_IF:{
       int seq=labelseq++;
@@ -170,53 +180,53 @@ static void gen(Node *node)
   printf("  pop rax\n");
 
   switch (node->kind) {
-  case ND_ADD:
-    printf("  add rax, rdi\n");
-    break;
-  case ND_PTR_ADD:
-    printf("  imul rdi,8\n");
-    printf("  add rax,rdi\n");
-    break;
-  case ND_SUB:
-    printf("  sub rax, rdi\n");
-    break;
-  case ND_PTR_SUB:
-    printf("  imul rdi, 8\n");
-    printf("  sub rax, rdi\n");
-    break;
-  case ND_PTR_DIFF:
-    printf("  sub rax, rdi\n");
-    printf("  cqo\n");
-    printf("  mov rdi, 8\n");
-    printf("  idiv rdi\n");
-    break;
-  case ND_MUL:
-    printf("  imul rax, rdi\n");
-    break;
-  case ND_DIV:
-    printf("  cqo\n");
-    printf("  idiv rdi\n");
-    break;
-  case ND_EQ:
-    printf("  cmp rax, rdi\n");
-    printf("  sete al\n");
-    printf("  movzb rax, al\n");
-    break;
-  case ND_NE:
-    printf("  cmp rax, rdi\n");
-    printf("  setne al\n");
-    printf("  movzb rax, al\n");
-    break;
-  case ND_LT:
-    printf("  cmp rax, rdi\n");
-    printf("  setl al\n");
-    printf("  movzb rax, al\n");
-    break;
-  case ND_LE:
-    printf("  cmp rax, rdi\n");
-    printf("  setle al\n");
-    printf("  movzb rax, al\n");
-    break;
+    case ND_ADD:
+      printf("  add rax, rdi\n");
+      break;
+    case ND_PTR_ADD:
+      printf("  imul rdi, %d\n", node->ty->base->size);
+      printf("  add rax, rdi\n");
+      break;
+    case ND_SUB:
+      printf("  sub rax, rdi\n");
+      break;
+    case ND_PTR_SUB:
+      printf("  imul rdi, %d\n", node->ty->base->size);
+      printf("  sub rax, rdi\n");
+      break;
+    case ND_PTR_DIFF:
+      printf("  sub rax, rdi\n");
+      printf("  cqo\n");
+      printf("  mov rdi, %d\n", node->lhs->ty->base->size);
+      printf("  idiv rdi\n");
+      break;
+    case ND_MUL:
+      printf("  imul rax, rdi\n");
+      break;
+    case ND_DIV:
+      printf("  cqo\n");
+      printf("  idiv rdi\n");
+      break;
+    case ND_EQ:
+      printf("  cmp rax, rdi\n");
+      printf("  sete al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_NE:
+      printf("  cmp rax, rdi\n");
+      printf("  setne al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_LT:
+      printf("  cmp rax, rdi\n");
+      printf("  setl al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_LE:
+      printf("  cmp rax, rdi\n");
+      printf("  setle al\n");
+      printf("  movzb rax, al\n");
+      break;
   }
 
   printf("  push rax\n");
