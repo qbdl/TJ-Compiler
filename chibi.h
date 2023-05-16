@@ -36,6 +36,7 @@ struct Token
 void error(char *fmt, ...);// Reports an error and exit.
 void error_at(char *loc, char *fmt, ...);// Reports an error location and exit.
 void error_tok(Token *tok, char *fmt, ...);
+Token *peek(char *s);
 Token *consume(char *op);
 Token *consume_ident(void);
 void expect(char *op); // Ensure that the current token is `op`.
@@ -60,6 +61,7 @@ typedef struct Var Var;
 struct Var
 {
   char *name;// Variable name
+  Type *ty;   // Type
   int offset;// Offset from RBP
 };
 
@@ -96,6 +98,7 @@ typedef enum
   ND_EXPR_STMT, // Expression statement
   ND_VAR,       // Variable
   ND_NUM,       // Integer
+  ND_NULL,      // Empty statement
 } NodeKind;
 
 // AST node type
@@ -154,7 +157,10 @@ struct Type
   Type *base;
 };
 
+extern Type *int_type;
+
 bool is_integer(Type *ty);
+Type *pointer_to(Type *base);
 void add_type(Node *node);
 
 
