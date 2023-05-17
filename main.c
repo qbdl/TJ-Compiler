@@ -9,10 +9,10 @@ int main(int argc,char **argv)
     user_input=argv[1];
     token=tokenize();
     //从根节点往下进行汇编代码生成
-    Function *prog = program();//调用顶部（内部自动完成AST树的生成）
+    Program *prog = program();//调用顶部（内部自动完成AST树的生成）
 
     // Assign offsets to local variables.(暂时是单函数)
-    for(Function *fn=prog;fn;fn=fn->next){
+    for(Function *fn=prog->fns;fn;fn=fn->next){
         int offset = 0;
         for (VarList *vl = fn->locals; vl; vl = vl->next) {
             Var *var = vl->var;

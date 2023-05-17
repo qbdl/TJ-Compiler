@@ -3,6 +3,7 @@
 // All local variable instances created during parsing are
 // accumulated to this list.
 static VarList *locals;
+static VarList *globals;
 
 // Find a local variable by name.
 static Var *find_var(Token *tok) 
@@ -12,6 +13,13 @@ static Var *find_var(Token *tok)
     if (strlen(var->name) == tok->len && !strncmp(tok->str, var->name, tok->len))
       return var;
   }
+
+  for(VarList *vl=globals;vl;vl=vl->next){
+    Var *var=vl->var;
+    if(strlen(var->name)==tok->len&&!strncmp(tok->str,var->name,tok->len))
+      return var;
+  }
+
   return NULL;
 }
 
@@ -53,11 +61,18 @@ static Node *new_var_node(Var *var, Token *tok)
   return node;
 }
 
-static Var *new_lvar(char *name, Type *ty)
+static Var *new_var(char *name, Type *ty,bool is_local)
 {
   Var *var=calloc(1,sizeof(Var));
   var->name=name;
   var->ty=ty;
+  var->is_local=is_local;
+  return var;
+}
+
+static Var *new_lvar(char *name,Type *ty)
+{
+  Var *var=new_var(name,ty,true);
 
   VarList *vl=calloc(1,sizeof(VarList));
   vl->var=var;
@@ -66,7 +81,20 @@ static Var *new_lvar(char *name, Type *ty)
   return var;
 }
 
+static Var *new_gvar(char *name,Type *ty)
+{
+  Var *var=new_var(name,ty,false);
+  
+  VarList *vl=calloc(1,sizeof(VarList));
+  vl->var=var;
+  vl->next=globals;
+  globals=vl;
+  return var;
+}
+
 static Function *function(void);
+static Type *basetype(void);
+static void global_var(void);
 static Node *declaration(void);
 static Node *stmt(void);
 static Node *stmt2(void);
@@ -80,18 +108,40 @@ static Node *unary(void);
 static Node *postfix(void);
 static Node *primary(void);
 
+// Determine whether the next top-level item is a function
+// or a global variable by looking ahead input tokens.
+static bool is_function(void) 
+{
+  Token *tok = token;
+  basetype();
+  bool isfunc = consume_ident() && consume("(");
+  token = tok;
+  return isfunc;
+}
+
 //目前parser的起点
-// program = function*
-Function *program(void) 
+// program = (global-var | function)*
+Program *program(void) 
 {
   Function head = {};
   Function *cur = &head;
+  globals=NULL;
 
   while (!at_eof()) {
-    cur->next = function();
-    cur = cur->next;
+    if(is_function()){
+      cur->next=function();
+      cur = cur->next;
+    }
+    else{
+      global_var();
+    }
   }
-  return head.next;
+
+  //类比function里locals的生成
+  Program *prog=calloc(1,sizeof(prog));
+  prog->globals=globals;
+  prog->fns=head.next;
+  return prog;
 }
 
 // basetype = "int" "*"*
@@ -169,6 +219,17 @@ static Function *function(void)
   fn->locals = locals;
   return fn;
 }
+
+// global-var = basetype ident ("[" num "]")* ";"
+static void global_var(void) 
+{
+  Type *ty = basetype();
+  char *name = expect_ident();
+  ty = read_type_suffix(ty);
+  expect(";");
+  new_gvar(name, ty);
+}
+
 
 // declaration = basetype ident ("[" num "]")* ("=" expr) ";"
 static Node *declaration(void) 
