@@ -144,11 +144,17 @@ Program *program(void)
   return prog;
 }
 
-// basetype = "int" "*"*
+// basetype = ("char" | "int") "*"*
 static Type *basetype(void) 
 {
-  expect("int");
-  Type *ty = int_type;
+  Type *ty;
+  if (consume("char")) {
+    ty = char_type;
+  } else {
+    expect("int");
+    ty = int_type;
+  }
+
   while (consume("*"))
     ty = pointer_to(ty);
   return ty;
@@ -258,6 +264,12 @@ static Node *read_expr_stmt(void)
   return new_unary(ND_EXPR_STMT, expr(),tok);
 }
 
+// Returns true if the next token represents a type.
+static bool is_typename(void) 
+{
+  return peek("char") || peek("int");
+}
+
 static Node *stmt(void)
 {
   Node *node = stmt2();
@@ -334,7 +346,7 @@ static Node *stmt2(void)
     return node;
   }
 
-  if (tok = peek("int"))
+  if (is_typename())
     return declaration();
 
   Node *node = read_expr_stmt();
