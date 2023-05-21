@@ -28,6 +28,12 @@ static void gen_addr(Node *node) //计算具体变量的地址
     case ND_DEREF:
       gen(node->lhs);
       return;
+    case ND_MEMBER:
+      gen_addr(node->lhs);
+      printf("  pop rax\n");
+      printf("  add rax, %d\n", node->member->offset);
+      printf("  push rax\n");
+      return;
   }
 
   error_tok(node->tok, "not an lvalue");
@@ -76,6 +82,7 @@ static void gen(Node *node)
       gen(node->lhs);
       printf("  add rsp, 8\n");
       return;
+    case ND_MEMBER:
     case ND_VAR:
       gen_addr(node);
       if (node->ty->kind != TY_ARRAY)
