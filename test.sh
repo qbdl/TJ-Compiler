@@ -13,7 +13,7 @@ EOF
 assert() {
   expected="$1"
   input="$2"
-  ./chibicc "$input" > tmp.s || exit
+  ./chibicc <(echo "$input") > tmp.s || exit
   gcc -static -o tmp tmp.s tmp2.o
   ./tmp
   actual="$?"

@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include<ctype.h>//用于测试和转换字符的函数
+#include <errno.h>
 #include<stdarg.h>//处理可变数量的参数
 #include<stdbool.h>
 #include<stdio.h>
@@ -50,6 +51,8 @@ char *expect_ident(void);
 bool at_eof(void); 
 Token *tokenize(void);
 
+//File name
+extern char *filename;
 // Input program
 extern char *user_input;
 //Global Current token
