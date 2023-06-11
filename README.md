@@ -1,4 +1,4 @@
-# TJ-Compiler![redis](https://img.shields.io/badge/qbdl-TJ--Compiler-blueviolet?logo=Github)
+# TJ-Compiler  ![redis](https://img.shields.io/badge/qbdl-TJ--Compiler-blueviolet?logo=Github)
 
 2023 编译原理课设 类C编译器
 
@@ -61,7 +61,7 @@ make clean #清除构建和测试过程中生成的文件
 
 ​	这部分的代码位于main.c文件中。它的主要任务是调用tokenizer、parser和code generator，以及处理命令行参数和文件输入/输出。
 
-<img src="./assets/Aritecture.png" alt="Aritecture" style="zoom: 50%;" />
+<img src="./assets/Aritecture.png" alt="Aritecture" width="600" height="500"/>
 
 ## 开发过程
 
